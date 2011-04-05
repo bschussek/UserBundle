@@ -152,6 +152,7 @@ abstract class User implements UserInterface
         $this->expired = false;
         $this->roles = array();
         $this->credentialsExpired = false;
+        $this->groups = new ArrayCollection();
     }
 
     public function addRole($role)
@@ -331,8 +332,10 @@ abstract class User implements UserInterface
     {
         $roles = $this->roles;
 
-        foreach ($this->getGroups() as $group) {
-            $roles = array_merge($roles, $group->getRoles());
+        if (null !== $this->getGroups()) {
+            foreach ($this->getGroups() as $group) {
+                $roles = array_merge($roles, $group->getRoles());
+            }
         }
 
         // we need to make sure to have at least one role
@@ -683,7 +686,7 @@ abstract class User implements UserInterface
      */
     public function getGroups()
     {
-        return $this->groups ?: $this->groups = new ArrayCollection();
+        return $this->groups;
     }
 
     /**
@@ -694,8 +697,10 @@ abstract class User implements UserInterface
     public function getGroupNames()
     {
         $names = array();
-        foreach ($this->getGroups() as $group) {
-            $names[] = $group->getName();
+        if (null !== $this->getGroups()) {
+            foreach ($this->getGroups() as $group) {
+                $names[] = $group->getName();
+            }
         }
 
         return $names;
@@ -709,7 +714,7 @@ abstract class User implements UserInterface
      */
     public function hasGroup($name)
     {
-        return in_array($name, $this->getGroupNames());
+        return null !== $this->getGroups() && in_array($name, $this->getGroupNames());
     }
 
     /**
@@ -720,7 +725,7 @@ abstract class User implements UserInterface
      **/
     public function addGroup(GroupInterface $group)
     {
-        if (!$this->getGroups()->contains($group)) {
+        if (null !== $this->getGroups() && !$this->getGroups()->contains($group)) {
             $this->getGroups()->add($group);
         }
     }
@@ -733,7 +738,7 @@ abstract class User implements UserInterface
      **/
     public function removeGroup(GroupInterface $group)
     {
-        if ($this->getGroups()->contains($group)) {
+        if (null !== $this->getGroups() && $this->getGroups()->contains($group)) {
             $this->getGroups()->remove($group);
         }
     }
