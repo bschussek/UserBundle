@@ -2,6 +2,7 @@
 
 namespace FOS\UserBundle\Form;
 use FOS\UserBundle\Model\User;
+use FOS\UserBundle\Model\UserManagerInterface;
 
 class ResetPassword
 {
@@ -17,8 +18,11 @@ class ResetPassword
      */
     public $new;
 
-    public function __construct(User $user)
+    protected $userManager;
+
+    public function __construct(User $user, UserManagerInterface $userManager)
     {
         $this->user = $user;
+        $this->userManager = $userManager;
     }
 }

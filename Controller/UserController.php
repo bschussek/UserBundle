@@ -20,6 +20,7 @@ use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 use FOS\UserBundle\Model\UserInterface;
+use FOS\UserBundle\Form\ChangePassword;
 
 /**
  * RESTful controller managing user CRUD
@@ -199,30 +200,19 @@ class UserController extends ContainerAware
      */
     public function changePasswordAction()
     {
-        $user = $this->getUser();
+        $changePassword = new ChangePassword($this->getUser());
         $form = $this->container->get('fos_user.form.change_password');
-        $formHandler = $this->container->get('fos_user.form.handler.change_password');
-        $formHandler->process($user);
+        $form->setData($changePassword);
 
-        return $this->container->get('templating')->renderResponse('FOSUserBundle:User:changePassword.html.'.$this->getEngine(), array(
-            'form' => $form->createView()
-        ));
-    }
+        if ('POST' == $this->request->getMethod()) {
+            $this->form->bindRequest($this->request);
 
-    /**
-     * Change user password: submit form
-     */
-    public function changePasswordUpdateAction()
-    {
-        $user = $this->getUser();
-        $form = $this->container->get('fos_user.form.change_password');
-        $formHandler = $this->container->get('fos_user.form.handler.change_password');
-
-        $process = $formHandler->process($user);
-        if ($process) {
-            $this->setFlash('fos_user_user_password', 'success');
-            $url =  $this->container->get('router')->generate('fos_user_user_show', array('username' => $user->getUsername()));
-            return new RedirectResponse($url);
+            if ($this->form->isValid()) {
+                $changePassword->process();
+                $this->setFlash('fos_user_user_password', 'success');
+                $url =  $this->container->get('router')->generate('fos_user_user_show', array('username' => $user->getUsername()));
+                return new RedirectResponse($url);
+            }
         }
 
         return $this->container->get('templating')->renderResponse('FOSUserBundle:User:changePassword.html.'.$this->getEngine(), array(
